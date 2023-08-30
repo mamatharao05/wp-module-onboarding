@@ -24,6 +24,8 @@ final class WP_Admin {
 	 * @return void
 	 */
 	public function __construct() {
+		/* Load i18 files */
+		\add_action( 'init', array( __CLASS__, 'load_text_domain' ), 100 );
 		\add_action( 'admin_menu', array( __CLASS__, 'register_page' ) );
 		\add_action( 'load-dashboard_page_' . self::$slug, array( __CLASS__, 'initialize' ) );
 	}
@@ -64,6 +66,28 @@ final class WP_Admin {
 	}
 
 	/**
+	 * Load text domain for module
+	 *
+	 * @return void
+	 */
+	public static function load_text_domain() {
+		
+		// Loads text domain for php use
+		\load_plugin_textdomain(
+			'wp-module-onboarding', // text-domain
+			false, // deprecated
+			NFD_ONBOARDING_DIR . '/languages' // path
+		);
+
+		// Loads text domain for js use
+		\load_script_textdomain(
+			self::$slug, // script handle `nfd-onboarding`
+			'wp-module-onboarding', // text-domain
+			NFD_ONBOARDING_DIR . '/languages' // path
+		);
+	}
+
+	/**
 	 * Register built assets with WP_Dependency system.
 	 *
 	 * @return void
@@ -79,11 +103,18 @@ final class WP_Admin {
 			$asset = include_once $asset_file;
 
 			\wp_register_script(
-				self::$slug,
+				self::$slug, // script handle `nfd-onboarding`
 				NFD_ONBOARDING_BUILD_URL . '/onboarding.js',
 				array_merge( $asset['dependencies'], array() ),
 				$asset['version'],
 				true
+			);
+
+			// Set translations for the script file
+			\wp_set_script_translations(
+				self::$slug, // script handle `nfd-onboarding`
+				'wp-module-onboarding', // text-domain
+				NFD_ONBOARDING_DIR . '/languages' // path
 			);
 
 			\wp_add_inline_script(
