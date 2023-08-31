@@ -22,7 +22,7 @@ final class SiteFeatures {
 						'icon'     => '--site-features-security',
 						'title'    => __( 'Security, Speed & Growth', 'wp-module-onboarding' ),
 						'subtitle' => __( 'Powered by Jetpack', 'wp-module-onboarding' ),
-						'desc'     => __( 'Jetpack includes dozens of powerful, unique capabilities for your WordPress sites from Automattic.', 'wp-module-onboarding' ),
+						'desc'     => __( 'Jetpackss includes dozens of powerful, unique capabilities for your WordPress sites from Automattic.', 'wp-module-onboarding' ),
 						'selected' => false,
 						'shown'    => true,
 						'activate' => false,
