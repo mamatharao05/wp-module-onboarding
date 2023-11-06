@@ -111,7 +111,8 @@ class PluginService {
 					}
 				}
 				break;
-			default:
+			case 'admin.php':
+			case 'plugins.php':
 				if ( '1' === get_transient( Options::get_option_name( 'filter_active_plugins' ) ) ) {
 					delete_transient( Options::get_option_name( 'filter_active_plugins' ) );
 					self::activate_init_plugins();
