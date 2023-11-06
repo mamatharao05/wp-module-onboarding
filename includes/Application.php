@@ -70,10 +70,10 @@ final class Application {
 
 		if ( Permissions::is_authorized_admin() || Permissions::rest_is_authorized_admin() ) {
 			new WP_Admin();
-		}
 
-		// Adds a transient to activate plugins in all scenarios.
-		PluginService::configure_activation_transient();
+			// Adds a transient to activate plugins in all scenarios.
+			PluginService::configure_activation_transient();
+		}
 
 		\do_action( 'nfd_module_onboarding_post_init' );
 	}

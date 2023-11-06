@@ -37,7 +37,7 @@ class PluginService {
 					PluginInstallTaskManager::add_to_queue(
 						new PluginInstallTask(
 							$init_plugin['slug'],
-							true,
+							$init_plugin['activate'],
 							$init_plugin['priority']
 						)
 					);
@@ -62,18 +62,18 @@ class PluginService {
 	 * @return boolean
 	 */
 	public static function activate_init_plugins() {
-		$init_plugins             = Plugins::get_init();
-		$filtered_init_plugins    = SiteFeatures::filter( $init_plugins, true );
-		$site_features_selected   = SiteFeatures::get_selected();
-		$site_features_unselected = SiteFeatures::get_unselected();
-		$final_init_plugins       = array_merge( $filtered_init_plugins, $site_features_selected );
+		$init_plugins           = Plugins::get_init();
+		$filtered_init_plugins  = SiteFeatures::filter( $init_plugins, true );
+		$site_features_selected = SiteFeatures::get_selected();
+		$final_init_plugins     = array_merge( $filtered_init_plugins, $site_features_selected );
 
 		foreach ( $final_init_plugins as $init_plugin ) {
 			$init_plugin_type = PluginInstaller::get_plugin_type( $init_plugin['slug'] );
 			$init_plugin_path = PluginInstaller::get_plugin_path( $init_plugin['slug'], $init_plugin_type );
+
 			// Checks if a plugin with the given slug and activation criteria already exists.
 			if ( PluginInstaller::is_plugin_installed( $init_plugin_path ) ) {
-					// Add a new PluginInstallTask to the Plugin install queue.
+					// Add a new PluginActivationTask to the Plugin activation queue.
 					PluginActivationTaskManager::add_to_queue(
 						new PluginActivationTask(
 							$init_plugin['slug']
@@ -86,29 +86,6 @@ class PluginService {
 				new PluginInstallTask(
 					$init_plugin['slug'],
 					true,
-					isset( $init_plugin['priority'] ) ? $init_plugin['priority'] : 0
-				)
-			);
-		}
-
-		foreach ( $site_features_unselected as $init_plugin ) {
-			$init_plugin_type = PluginInstaller::get_plugin_type( $init_plugin['slug'] );
-			$init_plugin_path = PluginInstaller::get_plugin_path( $init_plugin['slug'], $init_plugin_type );
-			// Checks if a plugin with the given slug and activation criteria already exists.
-			if ( PluginInstaller::is_plugin_installed( $init_plugin_path ) ) {
-					// Add a new PluginDeactivationTask to the Plugin Deactivation queue.
-					PluginDeactivationTaskManager::add_to_queue(
-						new PluginDeactivationTask(
-							$init_plugin['slug']
-						)
-					);
-					continue;
-			}
-
-			PluginInstallTaskManager::add_to_queue(
-				new PluginInstallTask(
-					$init_plugin['slug'],
-					false,
 					isset( $init_plugin['priority'] ) ? $init_plugin['priority'] : 0
 				)
 			);
@@ -141,17 +118,6 @@ class PluginService {
 				}
 				break;
 		}
-
-		// Add hook to activate plugins after transient is deleted
-		add_filter(
-			'option_active_plugins',
-			function( $plugins ) {
-				if ( '1' === get_transient( Options::get_option_name( 'filter_active_plugins' ) ) ) {
-					return array( container()->plugin()->basename );
-				}
-				return $plugins;
-			}
-		);
 
 	}
 }
