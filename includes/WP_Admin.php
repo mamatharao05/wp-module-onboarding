@@ -28,6 +28,8 @@ final class WP_Admin {
 		\add_action( 'init', array( __CLASS__, 'load_php_textdomain' ) );
 		\add_action( 'admin_menu', array( __CLASS__, 'register_page' ) );
 		\add_action( 'load-dashboard_page_' . self::$slug, array( __CLASS__, 'initialize' ) );
+
+		new AiPageGenerator();
 	}
 
 	/**
