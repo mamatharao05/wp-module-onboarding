@@ -88,3 +88,15 @@ export async function publishSitemapPages( siteDescription ) {
 		} ).then()
 	);
 }
+
+export async function generateThemeScreenshots( screenshotsPayload ) {
+	return await resolve(
+		apiFetch( {
+			url: onboardingRestURL( 'sitegen/generate-screenshots' ),
+			method: 'POST',
+			data: {
+				screenshots_payload: screenshotsPayload,
+			},
+		} ).then()
+	);
+}

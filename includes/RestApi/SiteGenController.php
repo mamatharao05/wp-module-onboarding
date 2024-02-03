@@ -99,6 +99,17 @@ class SiteGenController {
 				'args'                => $this->get_publish_sitemap_pages_args(),
 			)
 		);
+
+		\register_rest_route(
+			$this->namespace,
+			$this->rest_base . '/generate-screenshots',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'generate_theme_screenshots' ),
+				'permission_callback' => array( Permissions::class, 'rest_is_authorized_admin' ),
+				'args'                => $this->get_generate_theme_screenshots_args(),
+			)
+		);
 	}
 
 	/**
@@ -149,6 +160,20 @@ class SiteGenController {
 				'required'          => true,
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
+			),
+		);
+	}
+
+	/**
+	 * Gets the arguments for the '/pages/sitemap' endpoint.
+	 *
+	 * @return array The array of arguments.
+	 */
+	public function get_generate_theme_screenshots_args() {
+		return array(
+			'screenshots_payload' => array(
+				'required' => true,
+				'type'     => 'object',
 			),
 		);
 	}
@@ -315,6 +340,30 @@ class SiteGenController {
 		}
 
 		SiteGenService::publish_sitemap_pages( $site_description, $content_style, $target_audience, $sitemap );
+
+		return new \WP_REST_Response( array(), 201 );
+	}
+
+	/**
+	 * Generate the screenshots for different pages
+	 *
+	 * @param \WP_REST_Request $request The incoming request
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function generate_theme_screenshots( \WP_REST_Request $request ) {
+		$screenshots_payload = $request->get_param( 'screenshots_payload' );
+
+		if ( empty( $screenshots_payload ) ) {
+			return new \WP_Error(
+				'nfd_onboarding_error',
+				__( 'The Screenshot data was not available.', 'wp-module-onboarding' ),
+				array(
+					'status' => 400,
+				)
+			);
+		}
+
+		SiteGenService::generate_theme_screenshots( $screenshots_payload );
 
 		return new \WP_REST_Response( array(), 201 );
 	}

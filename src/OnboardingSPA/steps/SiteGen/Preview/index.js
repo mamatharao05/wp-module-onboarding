@@ -1,5 +1,6 @@
 import CommonLayout from '../../../components/Layouts/Common';
 
+import html2canvas from 'html2canvas';
 import { useEffect, useState } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { store as nfdOnboardingStore } from '../../../store';
@@ -91,6 +92,8 @@ const SiteGenPreview = () => {
 	}, [] );
 
 	const handlePreview = ( slug ) => {
+		// Add the logic here for Saving Screenshots
+
 		if ( ! ( slug in homepages ) ) {
 			return false;
 		}
