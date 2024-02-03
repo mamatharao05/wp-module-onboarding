@@ -104,30 +104,33 @@ const SiteGenPreview = () => {
 			let idx = 0;
 			const screenshotsPaylod = [];
 			for ( const frameObj of frameObjects ) {
-				const frameContent = frameObj.contentWindow.document.body;
-				const canvas = await html2canvas( frameContent,
+				const frameContent = frameObj.contentWindow?.document?.body;
+				await html2canvas( frameContent,
 					{
 						width: 1200,
 						height: 900,
 						useCORS: true,
 						windowWidth: 1200,
 						windowHeight: 900,
+					} ).then( ( canvas ) => {
+					const image = canvas.toDataURL( 'image/png', 1.0 );
+					screenshotsPaylod.push( {
+						key: frameObjectKeys[ idx ],
+						image,
 					} );
-				const image = canvas.toDataURL( 'image/png', 1.0 );
-				screenshotsPaylod.push( {
-					key: frameObjectKeys[ idx ],
-					image,
+				} ).catch( ( err ) => {
+					/* eslint-disable no-console */
+					console.log( err );
 				} );
 				idx++;
 			}
-
 			await generateThemeScreenshots( screenshotsPaylod );
 		}
 
-		// currentData.sitegen.homepages.active = homepages[ slug ];
-		// currentData.sitegen.skipCache = false;
-		// setCurrentOnboardingData( currentData );
-		// navigate( nextStep.path );
+		currentData.sitegen.homepages.active = homepages[ slug ];
+		currentData.sitegen.skipCache = false;
+		setCurrentOnboardingData( currentData );
+		navigate( nextStep.path );
 	};
 
 	const scrollSelectionIntoView = () => {
