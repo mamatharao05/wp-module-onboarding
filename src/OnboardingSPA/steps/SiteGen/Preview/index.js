@@ -11,7 +11,7 @@ import { SiteGenPreviewSelectableCard } from '../../../components/LivePreview';
 import getContents from './contents';
 import HeartAnimation from './heartAnimation';
 import RegeneratingSiteCard from './regeneratingCard';
-import { getHomepages, regenerateHomepage } from '../../../utils/api/siteGen';
+import { generateThemeScreenshots, getHomepages, regenerateHomepage } from '../../../utils/api/siteGen';
 import { getGlobalStyles } from '../../../utils/api/themes';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { cloneDeep, isEmpty } from 'lodash';
@@ -91,16 +91,43 @@ const SiteGenPreview = () => {
 		loadGlobalStyles();
 	}, [] );
 
-	const handlePreview = ( slug ) => {
-		// Add the logic here for Saving Screenshots
-
+	const handlePreview = async ( slug ) => {
 		if ( ! ( slug in homepages ) ) {
 			return false;
 		}
-		currentData.sitegen.homepages.active = homepages[ slug ];
-		currentData.sitegen.skipCache = false;
-		setCurrentOnboardingData( currentData );
-		navigate( nextStep.path );
+
+		// The logic here for Saving Screenshots
+		const frameObjectKeys = Object.keys( homepages );
+		const frameObjects = document.querySelectorAll( '.block-editor-block-preview__container > div > iframe' );
+
+		if ( frameObjectKeys.length > 0 && frameObjects.length > 0 && frameObjectKeys.length === frameObjects.length ) {
+			let idx = 0;
+			const screenshotsPaylod = [];
+			for ( const frameObj of frameObjects ) {
+				const frameContent = frameObj.contentWindow.document.body;
+				const canvas = await html2canvas( frameContent,
+					{
+						width: 1200,
+						height: 900,
+						useCORS: true,
+						windowWidth: 1200,
+						windowHeight: 900,
+					} );
+				const image = canvas.toDataURL( 'image/png', 1.0 );
+				screenshotsPaylod.push( {
+					key: frameObjectKeys[ idx ],
+					image,
+				} );
+				idx++;
+			}
+
+			await generateThemeScreenshots( screenshotsPaylod );
+		}
+
+		// currentData.sitegen.homepages.active = homepages[ slug ];
+		// currentData.sitegen.skipCache = false;
+		// setCurrentOnboardingData( currentData );
+		// navigate( nextStep.path );
 	};
 
 	const scrollSelectionIntoView = () => {
