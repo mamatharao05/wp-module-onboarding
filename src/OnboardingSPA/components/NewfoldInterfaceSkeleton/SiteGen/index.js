@@ -63,6 +63,7 @@ const SiteGen = () => {
 		useDispatch( nfdOnboardingStore );
 
 	const prevSiteGenErrorStatus = useRef();
+	const prevFailedApis = useRef();
 
 	async function syncStoreToDB() {
 		if ( currentData ) {
@@ -120,12 +121,22 @@ const SiteGen = () => {
 				}
 				return prevState;
 			} );
+			// console.log( identifier );
+			// if ( ! currentData.sitegen.failedApis.includes( identifier ) ) {
+			// 	console.log( 'am called' );
+			// 	currentData.sitegen.failedApis.push( identifier );
+			// }
+			// console.log( identifier );
+			// console.log( currentData.sitegen.failedApis)
 			currentData.sitegen.siteGenErrorStatus = true;
+			currentData.sitegen.failedApis = failedApi;
+			setCurrentOnboardingData( currentData );
 			updateSiteGenErrorStatus( true );
 		}
 	}
 
 	async function generateSiteGenData() {
+		console.log( 'gendata', currentData.sitegen.failedApis );
 		// Start the API Requests when the loader is shown.
 		if (
 			! (
@@ -137,8 +148,8 @@ const SiteGen = () => {
 		}
 
 		let identifiers;
-		if ( Array.isArray( failedApi ) && failedApi.length > 0 ) {
-			identifiers = failedApi;
+		if ( Array.isArray( currentData.sitegen.failedApis ) && currentData.sitegen.failedApis.length > 0 ) {
+			identifiers = currentData.sitegen.failedApis;
 			setFailedApi( [] );
 		} else {
 			identifiers = await getSiteGenIdentifiers();
@@ -152,13 +163,15 @@ const SiteGen = () => {
 				identifiers = identifiers.slice( midIndex );
 				currentData.sitegen.siteGenMetaStatus.currentStatus = midIndex;
 			}
-			setCurrentOnboardingData( currentData );
 		}
+		currentData.sitegen.failedApis = [];
+		setCurrentOnboardingData( currentData );
 		const siteInfo = {
 			site_description: currentData.sitegen?.siteDetails?.prompt,
 		};
 
-		const skipCache = currentData.sitegen?.skipCache;
+		// const skipCache = currentData.sitegen?.skipCache;
+		const skipCache = false;
 		// Iterate over Identifiers and fire Requests!
 		identifiers.forEach( ( identifier ) => {
 			performSiteGenMetaGeneration( siteInfo, identifier, skipCache );
@@ -182,6 +195,7 @@ const SiteGen = () => {
 	};
 
 	useEffect( () => {
+		console.log( 'refresh1', currentData.sitegen.failedApis );
 		if ( initialize ) {
 			initializePlugins( pluginInstallHash );
 			setInterval( cronTrigger, 45000 );
@@ -189,22 +203,27 @@ const SiteGen = () => {
 	}, [ initialize ] );
 
 	useEffect( () => {
+		console.log( 'refresh2', currentData.sitegen.failedApis );
 		syncStoreToDB();
 		generateSiteGenData();
 		handlePreviousStepTracking();
 	}, [ location.pathname ] );
 
 	useEffect( () => {
+		currentData.sitegen.failedApis = failedApi;
+		console.log( 'refresh3', currentData.sitegen.failedApis );
+
 		if ( prevSiteGenErrorStatus.current === true && siteGenErrorStatus === false ) {
-			generateSiteGenData( failedApi );
-			syncStoreToDB();
+			generateSiteGenData();
 		}
+		syncStoreToDB();
 		prevSiteGenErrorStatus.current = siteGenErrorStatus;
 	}, [ siteGenErrorStatus ] );
 
 	useEffect( () => {
 		initializeThemes();
 		initializeSettings();
+		console.log( 'refresh4', currentData.sitegen.failedApis);
 	}, [] );
 
 	return (
